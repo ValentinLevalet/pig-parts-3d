@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+	<meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<title>test 3d</title>
+    <style>
+        body {
+            font-family: Monospace;
+            background-color: #f0f0f0;
+            margin: 0px;
+            overflow: hidden;
+        }
+
+        #legend {
+            position: absolute;
+            bottom: 0;
+            font-size: 3em;
+            font-family: serif;
+            font-style: italic;
+            text-align: center;
+            width: 100%;
+        }
+    </style>
+
+
+</head>
+<body>
+
+<div id="legend">Legend</div>
+
+<script src="three.min.js"></script>
+
+        <script src="stats.min.js"></script>
+
+        <script src="ColladaLoader.js"></script>
+
+        <script src="TrackballControls.js"></script>
+
+        <script>
+
+            var container, stats;
+            var camera, scene, raycaster, renderer, controls;
+
+            var mouse = new THREE.Vector2(), INTERSECTED;
+            var radius = 100, theta = 0;
+
+            init();
+            animate();
+
+            function init() {
+
+                container = document.createElement( 'div' );
+                document.body.appendChild( container );
+
+                var info = document.createElement( 'div' );
+                info.style.position = 'absolute';
+                info.style.top = '10px';
+                info.style.width = '100%';
+                info.style.textAlign = 'center';
+                info.innerHTML = '<a href="http://threejs.org" target="_blank">three.js</a> webgl - interactive cubes';
+                container.appendChild( info );
+
+                camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 10000 );
+                camera.position.z = 100;
+
+                controls = new THREE.TrackballControls( camera );
+
+                controls.rotateSpeed = 1.0;
+                controls.zoomSpeed = 1.2;
+                controls.panSpeed = 0.8;
+
+                controls.noZoom = false;
+                controls.noPan = false;
+
+                controls.staticMoving = true;
+                controls.dynamicDampingFactor = 0.3;
+
+                controls.keys = [ 65, 83, 68 ];
+
+                controls.addEventListener( 'change', render );
+
+                scene = new THREE.Scene();
+
+                var light = new THREE.DirectionalLight( 0xffffff, 1 );
+                light.position.set( 1, 1, 1 ).normalize();
+
+                var light1 = new THREE.PointLight( 0xff0040, 1, 100 );
+
+                camera.add( light1 );
+                // scene.add( light1 );
+                scene.add( camera );
+
+                var geometry = new THREE.BoxBufferGeometry( 20, 20, 20 );
+
+                for ( var i = 0; i < 5; i ++ ) {
+
+                    var object = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial( { color: Math.random() * 0xffffff } ) );
+
+                    object.position.x = Math.random() * 800 - 400;
+                    object.position.y = Math.random() * 800 - 400;
+                    object.position.z = Math.random() * 800 - 400;
+
+                    object.rotation.x = Math.random() * 2 * Math.PI;
+                    object.rotation.y = Math.random() * 2 * Math.PI;
+                    object.rotation.z = Math.random() * 2 * Math.PI;
+
+                    object.scale.x = Math.random() + 0.5;
+                    object.scale.y = Math.random() + 0.5;
+                    object.scale.z = Math.random() + 0.5;
+
+                    scene.add( object );
+
+                }
+
+                //chargement modèle suzanne
+                var loader = new THREE.ColladaLoader();
+
+                loader.options.convertUpAxis = true;
+
+                loader.load( 'cochon_test_separate.dae', function ( collada ) {
+                    //dummy1.dae
+
+                    var dae = collada.scene;
+
+                    var skin = collada.skins[ 0 ];
+                    dae.position.set(0,0,0);//x,z,y- if you think in blender dimensions ;)
+                    dae.scale.set(15,15,15);
+
+                    //dae.children[0].material = new THREE.MeshPhongMaterial ( { map: dae.children[0].material.map });
+                    dae.children[0].children[0].material.color.setHex( 0xff0000 );
+                    scene.add(dae);
+
+                    //console.log(dae.children[0].children[0]);
+
+                });
+
+                console.log(scene);
+
+                //
+
+                raycaster = new THREE.Raycaster();
+
+                renderer = new THREE.WebGLRenderer({ antialias: true });
+                renderer.setClearColor( 0xf0f0f0 );
+                renderer.setPixelRatio( window.devicePixelRatio );
+                renderer.setSize( window.innerWidth, window.innerHeight );
+                renderer.sortObjects = false;
+                container.appendChild(renderer.domElement);
+
+                stats = new Stats();
+                container.appendChild( stats.dom );
+
+                document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+
+                //
+
+                window.addEventListener( 'resize', onWindowResize, false );
+
+            }
+
+            function onWindowResize() {
+
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+
+                renderer.setSize( window.innerWidth, window.innerHeight );
+
+            }
+
+            function onDocumentMouseMove( event ) {
+
+                event.preventDefault();
+
+                mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+                mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+            }
+
+            //
+
+            function animate() {
+
+                requestAnimationFrame( animate );
+
+                controls.update(); // required if controls.enableDamping = true, or if controls.autoRotate = true
+
+                render();
+                stats.update();
+
+            }
+
+            function render() {
+
+                //theta += 0.1;
+
+                //camera.position.x = radius * Math.sin( THREE.Math.degToRad( theta ) );
+                //camera.position.y = radius * Math.sin( THREE.Math.degToRad( theta ) );
+                //camera.position.z = radius * Math.cos( THREE.Math.degToRad( theta ) );
+                camera.lookAt( scene.position );
+
+                camera.updateMatrixWorld();
+
+                // find intersections
+
+                raycaster.setFromCamera( mouse, camera );
+
+
+
+                var intersects = raycaster.intersectObjects( scene.children, true );
+
+
+                if ( intersects.length > 0 ) {
+
+                    if ( INTERSECTED != intersects[ 0 ].object ) {
+
+
+                        if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
+                        INTERSECTED = intersects[ 0 ].object;
+                        INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
+                        INTERSECTED.material.emissive.setHex( 0xff0000 );
+                    //alert(intersects[0].object.id);
+                    document.getElementById("legend").innerHTML = intersects[0].object.id;
+                    // alert(intersects[0].object.id);
+
+                    }
+
+                } else {
+
+                    if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
+
+                    INTERSECTED = null;
+
+                }
+
+                renderer.render( scene, camera );
+
+            }
+
+
+
+        </script>
+
+</body>
+</html>
