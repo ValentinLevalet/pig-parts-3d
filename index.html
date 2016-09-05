@@ -15,7 +15,7 @@
         #legend {
             position: absolute;
             bottom: 0;
-            font-size: 3em;
+            font-size: 2em;
             font-family: serif;
             font-style: italic;
             text-align: center;
@@ -27,15 +27,12 @@
 </head>
 <body>
 
-<div id="legend">Legend</div>
+    <div id="legend">Legend</div>
 
-<script src="three.min.js"></script>
-
-        <script src="stats.min.js"></script>
-
-        <script src="ColladaLoader.js"></script>
-
-        <script src="TrackballControls.js"></script>
+        <script src="scripts/three.min.js"></script>
+        <script src="scripts/stats.min.js"></script>
+        <script src="scripts/ColladaLoader.js"></script>
+        <script src="scripts/OrbitControls.js"></script>
 
         <script>
 
@@ -53,32 +50,37 @@
                 container = document.createElement( 'div' );
                 document.body.appendChild( container );
 
-                var info = document.createElement( 'div' );
+                /*var info = document.createElement( 'div' );
                 info.style.position = 'absolute';
                 info.style.top = '10px';
                 info.style.width = '100%';
                 info.style.textAlign = 'center';
                 info.innerHTML = '<a href="http://threejs.org" target="_blank">three.js</a> webgl - interactive cubes';
-                container.appendChild( info );
+                container.appendChild( info );*/
 
                 camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 10000 );
                 camera.position.z = 100;
 
-                controls = new THREE.TrackballControls( camera );
+                controls = new THREE.OrbitControls( camera );
 
-                controls.rotateSpeed = 2.0;
-                controls.zoomSpeed = 1.2;
-                controls.panSpeed = 0.8;
+                // controls.rotateSpeed = 2.0;
+                // controls.zoomSpeed = 1.2;
+                // controls.panSpeed = 0.8;
 
-                controls.noZoom = false;
-                controls.noPan = false;
+                // controls.noZoom = false;
+                // controls.noPan = false;
 
-                controls.staticMoving = true;
-                controls.dynamicDampingFactor = 0.3;
+                // controls.staticMoving = true;
+                // controls.dynamicDampingFactor = 0.3;
 
-                controls.keys = [ 65, 83, 68 ];
+                // controls.keys = [ 65, 83, 68 ];
 
-                controls.addEventListener( 'change', render );
+                // controls.addEventListener( 'change', render );
+
+                // controls.enableDamping = true;
+                // controls.dampingFactor = 1;
+                controls.rotateSpeed = .5;
+                controls.zoomSpeed = .5;
 
                 scene = new THREE.Scene();
 
@@ -88,9 +90,10 @@
                 var light1 = new THREE.PointLight( 0xff0040, 1, 100 );
 
                 camera.add( light1 );
-                // scene.add( light1 );
+                scene.add( light );
                 scene.add( camera );
 
+/*
                 var geometry = new THREE.BoxBufferGeometry( 20, 20, 20 );
 
                 for ( var i = 0; i < 5; i ++ ) {
@@ -112,13 +115,14 @@
                     scene.add( object );
 
                 }
+*/
 
                 //chargement modèle suzanne
                 var loader = new THREE.ColladaLoader();
 
                 loader.options.convertUpAxis = true;
 
-                loader.load( 'cochon_test_separate.dae', function ( collada ) {
+                loader.load( 'model/cochon_test_separate.dae', function ( collada ) {
                     //dummy1.dae
 
                     var dae = collada.scene;
@@ -148,8 +152,8 @@
                 renderer.sortObjects = false;
                 container.appendChild(renderer.domElement);
 
-                stats = new Stats();
-                container.appendChild( stats.dom );
+                /*stats = new Stats();
+                container.appendChild( stats.dom );*/
 
                 document.addEventListener( 'mousemove', onDocumentMouseMove, false );
 
@@ -191,9 +195,31 @@
                         INTERSECTED = intersects[ 0 ].object;
                         INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
                         INTERSECTED.material.emissive.setHex( 0xff0000 );
-                    //alert(intersects[0].object.id);
-                    document.getElementById("legend").innerHTML = intersects[0].object.id;
-                    // alert(intersects[0].object.id);
+                        //alert(intersects[0].object.id);
+
+                        //var hoverId = document.getElementById("legend").innerHTML = intersects[0].object.id;
+                        var hoverId = intersects[0].object.id;
+
+                        // alert(intersects[0].object.id);
+                        var hoverNom = "bla";
+
+                        function survol(hoverId){
+                            switch(hoverId){
+                                case 11: hoverNom = "Jambonneau";
+                                break;
+                                case 13: hoverNom = "Jambon";
+                                break;
+                                case 15: hoverNom = "Pied";
+                                break;
+                                default:
+                                break;
+                            }
+                        }
+
+                        survol(hoverId);
+
+                        document.getElementById("legend").innerHTML = hoverNom;
+
 
                     }
 
@@ -216,7 +242,7 @@
                 controls.update(); // required if controls.enableDamping = true, or if controls.autoRotate = true
 
                 render();
-                stats.update();
+                //stats.update();
 
             }
 
@@ -227,7 +253,7 @@
                 //camera.position.x = radius * Math.sin( THREE.Math.degToRad( theta ) );
                 //camera.position.y = radius * Math.sin( THREE.Math.degToRad( theta ) );
                 //camera.position.z = radius * Math.cos( THREE.Math.degToRad( theta ) );
-                camera.lookAt( scene.position );
+                //camera.lookAt( scene.position );
 
                 camera.updateMatrixWorld();
 
