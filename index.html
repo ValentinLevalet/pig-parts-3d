@@ -13,11 +13,14 @@
         }
 
         #legend {
+            background: linear-gradient(rgba(255,255,255,0),#fff);
+            display: block;
             position: absolute;
             bottom: 0;
             font-size: 2em;
             font-family: serif;
             font-style: italic;
+            height: 1.25em;
             text-align: center;
             width: 100%;
         }
@@ -27,7 +30,7 @@
 </head>
 <body>
 
-    <div id="legend">Legend</div>
+    <div id="legend"></div>
 
         <script src="scripts/three.min.js"></script>
         <script src="scripts/stats.min.js"></script>
@@ -152,14 +155,32 @@
                 renderer.sortObjects = false;
                 container.appendChild(renderer.domElement);
 
-                /*stats = new Stats();
-                container.appendChild( stats.dom );*/
+                stats = new Stats();
+                container.appendChild( stats.dom );
 
                 document.addEventListener( 'mousemove', onDocumentMouseMove, false );
 
                 //
 
+
                 window.addEventListener( 'resize', onWindowResize, false );
+                //console.log(camera);
+                var tapped = false;
+                var canevas = document.getElementsByTagName('canvas');
+                canevas[0].addEventListener('touchstart', function(event){
+                    if(!tapped){
+                        tapped = setTimeout(function(){
+                            tapped = null;
+                        },200);
+                    }else if(event.touches.length === 1){
+                            clearTimeout(tapped);
+                            tapped = null;
+                         controls.reset();
+                            
+                            //alert("double tapped : "+event.touches.length);
+                    }
+                    //e.preventDefault;
+                });
 
             }
 
@@ -171,6 +192,8 @@
                 renderer.setSize( window.innerWidth, window.innerHeight );
 
             }
+
+            var select = false;
 
             function onDocumentMouseMove( event ) {
 
@@ -190,6 +213,7 @@
 
                     if ( INTERSECTED != intersects[ 0 ].object ) {
 
+                        select = true;
 
                         if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
                         INTERSECTED = intersects[ 0 ].object;
@@ -201,7 +225,6 @@
                         var hoverId = intersects[0].object.id;
 
                         // alert(intersects[0].object.id);
-                        var hoverNom = "bla";
 
                         function survol(hoverId){
                             switch(hoverId){
@@ -211,15 +234,13 @@
                                 break;
                                 case 15: hoverNom = "Pied";
                                 break;
-                                default:
-                                break;
+                                default :
                             }
                         }
 
                         survol(hoverId);
 
                         document.getElementById("legend").innerHTML = hoverNom;
-
 
                     }
 
@@ -228,6 +249,12 @@
                     if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
 
                     INTERSECTED = null;
+
+                    if (select == true){
+                        document.getElementById("legend").innerHTML = '';
+
+                        select = false;
+                    }
 
                 }
 
@@ -242,7 +269,7 @@
                 controls.update(); // required if controls.enableDamping = true, or if controls.autoRotate = true
 
                 render();
-                //stats.update();
+                stats.update();
 
             }
 
